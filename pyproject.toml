@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "streamlit"
+version = "0.1.0"
+description = ""
+authors = ["Veronika <Veronika.Tsishetska@adesso.de>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+openai = "datetime"
+
+[tool.poetry.group.dev.dependencies]
+DateTime = "^5.5"
+json2json = "^0.1.0"
+pandas = "^2.2.2"
+streamlit-aggrid = "^1.0.5"
+1OS = "^0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
