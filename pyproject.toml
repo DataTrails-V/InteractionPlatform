@@ -1,3 +1,10 @@
+[tool.poetry]
+name = "interactionplatform"
+version = "0.1.0"
+description = "A Streamlit application for real-time interactions."
+authors = ["Veronika Tsishetska <veronikatsishetska@gmail.com>"]
+readme = "README.md"
+
 [tool.poetry.dependencies]
 python = "^3.10"
 streamlit = "^1.11.0" 
