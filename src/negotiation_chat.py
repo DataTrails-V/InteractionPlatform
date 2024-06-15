@@ -6,8 +6,46 @@ import json
 import pandas as pd
 import os
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+import uuid
 # Initialize the OpenAI client (replace 'your-api-key' with your actual OpenAI API key)
 client = OpenAI(api_key=os.getenv('API_KEY'))
+
+def save_data_to_excel(df, filename='SurveyData.xlsx'):
+    """Save DataFrame to an Excel file and upload it to Google Drive."""
+    # Setup Google Drive
+    g_login = GoogleAuth()
+    g_login.LoadClientConfigFile("src/client_secret.json")
+    g_login.LocalWebserverAuth()
+    drive = GoogleDrive(g_login)
+
+    # Try to load the existing file from Google Drive
+    file_list = drive.ListFile({'q': f"title='{filename}' and trashed=false"}).GetList()
+    
+    if file_list:
+        # File exists, download it
+        file_to_update = drive.CreateFile({'id': file_list[0]['id']})
+        file_to_update.GetContentFile(filename)
+        existing_df = pd.read_excel(filename)
+        df = pd.concat([existing_df, df], ignore_index=True)
+    else:
+        # File does not exist, use the provided DataFrame directly
+        df = df.copy()
+
+    # Save DataFrame to Excel
+    df.to_excel(filename, index=False)
+
+    # Upload or update the file on Google Drive
+    if file_list:
+        file_to_update.SetContentFile(filename)
+        file_to_update.Upload()  # Update the existing file
+    else:
+        file_to_create = drive.CreateFile({'title': filename})
+        file_to_create.SetContentFile(filename)
+        file_to_create.Upload()  # Upload as a new file
+
+    return ""
 
 scenarios_backgrounds = {
         "Work-Study Program": "You play the role of an advisor in a work-study program negotiation. You are negotiating how to distribute funds among fictitious candidates for a work-study program. We have $30,000 to distribute among Alice, Bob, and Carol. Our goal is to allocate these funds in a way that supports their participation in the work-study program effectively. Background Information: Alice is a high academic achiever and has moderate financial need. Bob has average academic performance and high financial need. Carol has good academic performance and low financial need.",
@@ -57,6 +95,8 @@ def save_data(data, filename_prefix):
     return file_path
 
 def main():
+    if 'transformed' not in st.session_state:
+        st.session_state.transformed = pd.DataFrame()
     st.sidebar.title("Navigation")
     selection = st.sidebar.radio("Go to", ["Home", "Questionnaire", "Negotiation 1", "Negotiation 2"])
     
@@ -120,6 +160,7 @@ def main():
 
         # Consent Checkbox
         consent = st.checkbox("By checking this box, you confirm that you have read and understood this consent form and agree to participate in this research study. You consent to the collection, processing, and use of your personal and interaction data as outlined above, in accordance with GDPR and other applicable regulations.", value=st.session_state.consent)
+        
 
         # Update session state when checkbox is interacted with
         if consent != st.session_state.consent:
@@ -139,13 +180,13 @@ def main():
         # Demographic Questions
         data = {}
         age_options = ["18-20", "21-25", "26-30", "31-39", "40 and above"]
-        data['age'] = st.selectbox("What is your age range?", age_options, key='age_range')
-        data['gender'] = st.radio("What is your gender?", ["Male", "Female", "Other"], key='gender')
-        data['academic_degree'] = st.selectbox("What is your highest academic degree?", ["Bachelor", "Master", "PhD", "Other"], key='academic_degree')
-
+        age = st.selectbox("What is your age range?", age_options, key='age_range')
+        gender = st.radio("What is your gender?", ["Male", "Female", "Other"], key='gender')
+        academic_degree = st.selectbox("What is your highest academic degree?", ["Bachelor", "Master", "PhD", "Other"], key='academic_degree')
+        mother_tongue = 'english'
         is_english = st.radio("Is English your mother tongue?", ["Yes", "No"], key='is_english')
         if is_english == "No":
-            data['mother_tongue'] = st.text_input("What is your mother tongue?", key='mother_tongue')
+            mother_tongue = st.text_input("What is your mother tongue?", key='mother_tongue')
 
         # Likert Scale Questions
         statements = [
@@ -213,6 +254,7 @@ def main():
         }
 
         """)
+
         df = pd.DataFrame(data)
 
         # Set up the grid options builder
@@ -234,31 +276,50 @@ def main():
 
         # Update DataFrame if there are changes
         if response:
-            df = response['data']
+             df = response['data']
+        data = response['data']
 
 
-
-        
+        data['age'] = age
+        data['gender'] = gender
+        data['academic_degree'] = academic_degree
+        data['mother_tongue'] = mother_tongue
         st.write("Please describe your understanding of the following concepts:")
         data['equality'] = st.text_area("What is your understanding of equality?", height=150)
         data['proportionality'] = st.text_area("What is your understanding of proportionality?", height=150)
+        
+        df = pd.DataFrame(data)
+        transformed = pd.DataFrame(index=[0])
+        
+        # Transposing statements into separate columns with responses
+        for i, row in df.iterrows():
+            # Check each response column
+            for col in ['1 - Strongly Disagree', '2 - Disagree', '3 - Neutral', '4 - Agree', '5 - Strongly Agree']:
+                if row[col]:
+                    # If the value is True, set the column name of the new DataFrame to the statement
+                    # and the value to the name of the column where the value was True
+                    transformed.loc[0, row['Statement']] = col.replace(" ", "_")
+                    
+        demographic_cols = ['age', 'gender', 'academic_degree', 'mother_tongue', 'equality', 'proportionality']
+        for col in demographic_cols:
+            transformed[col] = df[col][0]
 
-    
-    
+        transformed.insert(0, 'ParticipantID', uuid.uuid4())
+        # if st.button('Submit Responses', key='submit_survey'):
+        #     print("Submitting the following data:", transformed) 
+        #     file_path = save_data_to_excel(transformed, 'survey_responses.xlsx')
+        #     st.success(f'Thank you for your responses!{file_path}')
 
-        if st.button('Submit Responses', key='submit_survey'):
-            if data['consent']:
-                file_path = save_data(data, 'survey_responses')
-                st.success(f'Thank you for your responses! Saved in {file_path}')
-            else:
-                st.error("You must agree to the data collection to participate in this study.")
-
-
+        st.session_state.transformed = transformed
+        if st.button('Submit', key='submit_resp'):
+                st.success(f'Thank you for sharing your background information!') 
 
     if 'scenario' not in st.session_state:
         st.session_state.scenario = "Work-Study Program"  # Default scenario
     if 'personality' not in st.session_state:
         st.session_state.personality = "Default"  # Default personality
+        
+
 
     
     elif selection == "Negotiation 1":
@@ -308,11 +369,15 @@ def main():
                 st.write("You:", message['content'])
             elif message['role'] == 'assistant':
                 st.write("AI:", message['content'])
+                
+        st.session_state.transformed['Scenario'] = st.session_state.scenario
+        st.session_state.transformed['GPT_Personality'] = st.session_state.personality
+        st.session_state.transformed['Negotiation1'] = [json.dumps(st.session_state.chat_log_1)]
 
     elif selection == "Negotiation 2":
         st.header('Welcome to your second Negotiation Chatbot Session')
         st.write("""
-            Continue your negotiation with this chatbot, analogous to the previous session. Use the same scenario you selected earlier, and negotiate according to your role.
+            Continue your negotiation with this chatbot, analogous to the previous session. Use the same scenario you selected earlier, and negotiate according to your role. Don't forget to press submit negotiations after you have completely finished your negotiation with the chatbot!
         """)
 
         # Initialize chat log for Negotiation 2 if not present
@@ -347,6 +412,13 @@ def main():
                 st.write("You:", message['content'])
             elif message['role'] == 'assistant':
                 st.write("AI:", message['content'])
+                
+        st.session_state.transformed['Negotiation2'] = [json.dumps(st.session_state.chat_log_2)]
                     
+        if st.button('Submit your negotiations', key='submit_neg'):
+            #print("Submitting the following data:", transformed) 
+            file_path = save_data_to_excel(st.session_state.transformed, 'survey_responses.xlsx')
+            st.success(f'Thank you for your participation!{file_path}')        
+    
 if __name__ == "__main__":
     main()
