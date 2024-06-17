@@ -6,6 +6,8 @@ import json
 import pandas as pd
 import os
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 # from pydrive2.auth import GoogleAuth
 # from pydrive2.drive import GoogleDrive
 # from google.oauth2.service_account import Credentials
@@ -21,10 +23,48 @@ client = OpenAI(api_key=os.getenv('API_KEY'))
 
     
 def save_data_to_excel(data, filename='data.xlsx'):
-    if os.path.exists(filename):
-        existing_data = pd.read_excel(filename)
+    # Setup the connection to Google Sheets
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    
+    creds_dict = {
+        'type': st.secrets["service_account"]["type"],
+        'project_id': st.secrets["service_account"]["project_id"],
+        'private_key_id': st.secrets["service_account"]["private_key_id"],
+        'private_key': st.secrets["service_account"]["private_key"],
+        'client_email': st.secrets["service_account"]["client_email"],
+        'client_id': st.secrets["service_account"]["client_id"],
+        'auth_uri': st.secrets["service_account"]["auth_uri"],
+        'token_uri': st.secrets["service_account"]["token_uri"],
+        'auth_provider_x509_cert_url': st.secrets["service_account"]["auth_provider_x509_cert_url"],
+        'client_x509_cert_url': st.secrets["service_account"]["client_x509_cert_url"]
+    }
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+
+    try:
+        # Open the specific worksheet by title
+        sheet = client.open('survey_responses').sheet1
+    except gspread.SpreadsheetNotFound:
+        # If the spreadsheet does not exist, create a new one and get the first sheet
+        sheet = client.create('survey_responses').sheet1
+        # Set up the header row if creating new
+        sheet.append_row(data.columns.tolist())
+
+    # Read existing data as DataFrame
+    existing_data = pd.DataFrame(sheet.get_all_records())
+
+    # Concatenate new data
+    if not existing_data.empty:
         data = pd.concat([existing_data, data], ignore_index=True)
-    data.to_excel(filename, index=False)
+
+    # Clear the sheet before appending new data to avoid duplicates
+    sheet.clear()
+
+    # Convert DataFrame to list of lists, as required by gspread
+    data_list = [data.columns.tolist()] + data.values.tolist()
+
+    # Append data
+    sheet.append_rows(data_list)
 
 
 scenarios_backgrounds = {
@@ -398,7 +438,7 @@ def main():
         if st.button('Submit your negotiations', key='submit_neg'):
             #print("Submitting the following data:", transformed) 
             file_path = save_data_to_excel(st.session_state.transformed, 'survey_responses.xlsx')
-            st.success(f'Thank you for your participation!{file_path}')        
+            st.success(f'Thank you for your participation!')        
     
 if __name__ == "__main__":
     main()
