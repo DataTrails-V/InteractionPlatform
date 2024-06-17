@@ -22,6 +22,13 @@ client = OpenAI(api_key=os.getenv('API_KEY'))
 #client_secret = st.secrets["client_secret"]
 
     
+def convert_uuid_to_str(data):
+    """Convert UUID objects in DataFrame to strings."""
+    for column in data.columns:
+        if data[column].dtype == 'object':
+            data[column] = data[column].apply(lambda x: str(x) if isinstance(x, UUID) else x)
+    return data
+
 def save_data_to_excel(data, filename='data.xlsx'):
     # Setup the connection to Google Sheets
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -60,13 +67,17 @@ def save_data_to_excel(data, filename='data.xlsx'):
     # Clear the sheet before appending new data to avoid duplicates
     sheet.clear()
 
+    # Convert UUIDs to strings
+    data = convert_uuid_to_str(data)
+
     # Convert DataFrame to list of lists, as required by gspread
     data_list = [data.columns.tolist()] + data.values.tolist()
 
     # Append data
     sheet.append_rows(data_list)
-
-
+    
+    
+    
 scenarios_backgrounds = {
         "Work-Study Program": "You play the role of an advisor in a work-study program negotiation. You are negotiating how to distribute funds among fictitious candidates for a work-study program. We have $30,000 to distribute among Alice, Bob, and Carol. Our goal is to allocate these funds in a way that supports their participation in the work-study program effectively. Background Information: Alice is a high academic achiever and has moderate financial need. Bob has average academic performance and high financial need. Carol has good academic performance and low financial need.",
         "Selling a Company": "You play the role of a business partner in the process of selling a company. You and your partner end up getting an offer that pleases you both, namely $500,000, so now you face the enviable task of splitting up the money. You put twice as many hours into the firm’s start-up as your partner did, while he worked fulltime elsewhere to support his family. You, who are independently wealthy, were compensated nominally for your extra time. For you, the profit from the sale would be a nice bonus. For your partner, it would be a much-needed windfall.",
