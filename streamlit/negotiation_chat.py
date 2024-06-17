@@ -34,10 +34,25 @@ def save_data_to_excel(df, filename='SurveyData.xlsx'):
     # g_login.LocalWebserverAuth()
     # drive = GoogleDrive(g_login)
     
-    # Authenticate using service account
-    credentials = Credentials.from_service_account_info(client_secret)
+    # Create a temporary file to store service account credentials for PyDrive
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+        temp_file.write(json.dumps({
+            "type": client_secret["type"],
+            "project_id": client_secret["project_id"],
+            "private_key_id": client_secret["private_key_id"],
+            "private_key": client_secret["private_key"],
+            "client_email": client_secret["client_email"],
+            "client_id": client_secret["client_id"],
+            "auth_uri": client_secret["auth_uri"],
+            "token_uri": client_secret["token_uri"],
+            "auth_provider_x509_cert_url": client_secret["auth_provider_x509_cert_url"],
+            "client_x509_cert_url": client_secret["client_x509_cert_url"]
+        }))
+        temp_file_path = temp_file.name
+
+    # Initialize PyDrive with the temporary credentials file
     g_login = GoogleAuth()
-    g_login.credentials = credentials
+    g_login.LoadCredentialsFile(temp_file_path)
     drive = GoogleDrive(g_login)
     
     
