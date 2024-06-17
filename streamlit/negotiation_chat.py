@@ -28,7 +28,7 @@ def save_data_to_excel(df, filename='SurveyData.xlsx'):
     # Setup Google Drive
     g_login = GoogleAuth()
     #g_login.LoadClientConfigFile("streamlit/client_secret.json")
-    g_login.LoadClientConfigFile(temp_file_path)
+    g_login.LoadClientConfigFile(client_secret)
     g_login.LocalWebserverAuth()
     drive = GoogleDrive(g_login)
 
