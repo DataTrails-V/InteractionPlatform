@@ -6,9 +6,9 @@ import json
 import pandas as pd
 import os
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
-from pydrive2.auth import GoogleAuth
-from pydrive2.drive import GoogleDrive
-from google.oauth2.service_account import Credentials
+# from pydrive2.auth import GoogleAuth
+# from pydrive2.drive import GoogleDrive
+# from google.oauth2.service_account import Credentials
 import uuid
 import tempfile
 
@@ -17,71 +17,15 @@ client = OpenAI(api_key=os.getenv('API_KEY'))
 
 
 # Load secrets from Streamlit
-client_secret = st.secrets["client_secret"]
+#client_secret = st.secrets["client_secret"]
 
     
-def save_data_to_excel(df, filename='SurveyData.xlsx'):
-    """Save DataFrame to an Excel file and upload it to Google Drive."""
-    # Setup Google Drive
-    #g_login = GoogleAuth()
-    #g_login.LoadClientConfigFile("streamlit/client_secret.json")
-    # Create a temporary file to store client secret
-    # with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
-    #     temp_file.write(client_secret)
-    #     temp_file_path = temp_file.name
-    
-    # g_login.LoadClientConfigFile(temp_file_path)
-    # g_login.LocalWebserverAuth()
-    # drive = GoogleDrive(g_login)
-    
-    # Create a temporary file to store service account credentials for PyDrive
-    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
-        temp_file.write(json.dumps({
-            "type": client_secret["type"],
-            "project_id": client_secret["project_id"],
-            "private_key_id": client_secret["private_key_id"],
-            "private_key": client_secret["private_key"],
-            "client_email": client_secret["client_email"],
-            "client_id": client_secret["client_id"],
-            "auth_uri": client_secret["auth_uri"],
-            "token_uri": client_secret["token_uri"],
-            "auth_provider_x509_cert_url": client_secret["auth_provider_x509_cert_url"],
-            "client_x509_cert_url": client_secret["client_x509_cert_url"]
-        }))
-        temp_file_path = temp_file.name
+def save_data_to_excel(data, filename='data.xlsx'):
+    if os.path.exists(filename):
+        existing_data = pd.read_excel(filename)
+        data = pd.concat([existing_data, data], ignore_index=True)
+    data.to_excel(filename, index=False)
 
-    # Initialize PyDrive with the temporary credentials file
-    g_login = GoogleAuth()
-    g_login.LoadCredentialsFile(temp_file_path)
-    drive = GoogleDrive(g_login)
-    
-    
-    # Try to load the existing file from Google Drive
-    file_list = drive.ListFile({'q': f"title='{filename}' and trashed=false"}).GetList()
-    
-    if file_list:
-        # File exists, download it
-        file_to_update = drive.CreateFile({'id': file_list[0]['id']})
-        file_to_update.GetContentFile(filename)
-        existing_df = pd.read_excel(filename)
-        df = pd.concat([existing_df, df], ignore_index=True)
-    else:
-        # File does not exist, use the provided DataFrame directly
-        df = df.copy()
-
-    # Save DataFrame to Excel
-    df.to_excel(filename, index=False)
-
-    # Upload or update the file on Google Drive
-    if file_list:
-        file_to_update.SetContentFile(filename)
-        file_to_update.Upload()  # Update the existing file
-    else:
-        file_to_create = drive.CreateFile({'title': filename})
-        file_to_create.SetContentFile(filename)
-        file_to_create.Upload()  # Upload as a new file
-
-    return ""
 
 scenarios_backgrounds = {
         "Work-Study Program": "You play the role of an advisor in a work-study program negotiation. You are negotiating how to distribute funds among fictitious candidates for a work-study program. We have $30,000 to distribute among Alice, Bob, and Carol. Our goal is to allocate these funds in a way that supports their participation in the work-study program effectively. Background Information: Alice is a high academic achiever and has moderate financial need. Bob has average academic performance and high financial need. Carol has good academic performance and low financial need.",
