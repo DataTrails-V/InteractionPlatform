@@ -12,7 +12,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # from pydrive2.drive import GoogleDrive
 # from google.oauth2.service_account import Credentials
 
-import tempfile
+import uuid
 from uuid import UUID
 
 # Initialize the OpenAI client (replace 'your-api-key' with your actual OpenAI API key)
@@ -336,7 +336,7 @@ def main():
         for col in demographic_cols:
             transformed[col] = df[col][0]
 
-        transformed.insert(0, 'ParticipantID', str(uuid.uuid4()))
+        transformed.insert(0, 'ParticipantID', uuid.uuid4())
         # if st.button('Submit Responses', key='submit_survey'):
         #     print("Submitting the following data:", transformed) 
         #     file_path = save_data_to_excel(transformed, 'survey_responses.xlsx')
