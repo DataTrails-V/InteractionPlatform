@@ -11,8 +11,9 @@ from oauth2client.service_account import ServiceAccountCredentials
 # from pydrive2.auth import GoogleAuth
 # from pydrive2.drive import GoogleDrive
 # from google.oauth2.service_account import Credentials
-import uuid
+
 import tempfile
+from uuid import UUID
 
 # Initialize the OpenAI client (replace 'your-api-key' with your actual OpenAI API key)
 client = OpenAI(api_key=os.getenv('API_KEY'))
