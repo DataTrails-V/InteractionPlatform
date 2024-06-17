@@ -18,17 +18,18 @@ client = OpenAI(api_key=os.getenv('API_KEY'))
 # Load secrets from Streamlit
 client_secret = st.secrets["client_secret"]
 
-# Create a temporary file to store client secret
-with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
-    temp_file.write(client_secret)
-    temp_file_path = temp_file.name
     
 def save_data_to_excel(df, filename='SurveyData.xlsx'):
     """Save DataFrame to an Excel file and upload it to Google Drive."""
     # Setup Google Drive
     g_login = GoogleAuth()
     #g_login.LoadClientConfigFile("streamlit/client_secret.json")
-    g_login.LoadClientConfigFile(client_secret)
+    # Create a temporary file to store client secret
+    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+        temp_file.write(client_secret)
+        temp_file_path = temp_file.name
+    
+    g_login.LoadClientConfigFile(temp_file_path)
     g_login.LocalWebserverAuth()
     drive = GoogleDrive(g_login)
 
