@@ -26,9 +26,9 @@ def save_data_to_excel(df, filename='SurveyData.xlsx'):
     #g_login = GoogleAuth()
     #g_login.LoadClientConfigFile("streamlit/client_secret.json")
     # Create a temporary file to store client secret
-    with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
-        temp_file.write(client_secret)
-        temp_file_path = temp_file.name
+    # with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+    #     temp_file.write(client_secret)
+    #     temp_file_path = temp_file.name
     
     # g_login.LoadClientConfigFile(temp_file_path)
     # g_login.LocalWebserverAuth()
