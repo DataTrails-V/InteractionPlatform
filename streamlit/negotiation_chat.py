@@ -7,6 +7,7 @@ import pandas as pd
 import os
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 import gspread
+from streamlit_extras.switch_page_button import switch_page
 from oauth2client.service_account import ServiceAccountCredentials
 # from pydrive2.auth import GoogleAuth
 # from pydrive2.drive import GoogleDrive
@@ -82,7 +83,7 @@ def save_data_to_excel(data, filename='data.xlsx'):
 scenarios_backgrounds = {
         "Work-Study Program": "You play the role of an advisor in a work-study program negotiation. You are negotiating how to distribute funds among fictitious candidates for a work-study program. We have $30,000 to distribute among Alice, Bob, and Carol. Our goal is to allocate these funds in a way that supports their participation in the work-study program effectively. Background Information: Alice is a high academic achiever and has moderate financial need. Bob has average academic performance and high financial need. Carol has good academic performance and low financial need.",
         "Selling a Company": "You play the role of a business partner in the process of selling a company. You and your partner end up getting an offer that pleases you both, namely $500,000, so now you face the enviable task of splitting up the money. You put twice as many hours into the firm’s start-up as your partner did, while he worked fulltime elsewhere to support his family. You, who are independently wealthy, were compensated nominally for your extra time. For you, the profit from the sale would be a nice bonus. For your partner, it would be a much-needed windfall.",
-        "Bonus Allocation": "You play the role of an HR manager discussing bonus allocations. Youb and your negotiation partner have to allocate a bonus of $50,000 among three employees. The first employee exceeded the targets and took on additional responsibilities. The second employee showed great improvement and proactive behavior. The third employee performed solidly according to the role requirements."
+        "Bonus Allocation": "You play the role of an HR manager discussing bonus allocations. You and your negotiation partner have to allocate a bonus of $50,000 among three employees. The first employee exceeded the targets and took on additional responsibilities. The second employee showed great improvement and proactive behavior. The third employee performed solidly according to the role requirements."
     }
 personality_type = {
         "Proportional": "You are a negotiation partner, which acts according to proportionality.",
@@ -93,13 +94,14 @@ personality_type = {
 def ask(question, chat_log=None, version = "", scenario="", personality = ""):
     """Function to ask a question to the AI model and get a response based on the scenario."""
     scenario_instructions = {
-        "Work-Study Program": "Instruction1: You play the role of an advisor in a work-study program negotiation.  We are negotiating how to distribute funds among fictitious candidates for a work-study program. We have $30,000 to distribute among Alice, Bob, and Carol. Our goal is to allocate these funds in a way that supports their participation in the work-study program effectively. Background Information: Alice is a high academic achiever and has moderate financial need. Bob has verage academic performance and high financial need. Carol has good academic performance and low financial need.",
-        "Selling a Company": "Instruction2: You play the role of a business partner in the process of selling a company. We end up getting an offer that pleases us both, namely $500000 , so now you face the enviable task of splitting up the money. Your partner put twice as many hours into the firm’s start-up as you did, while you worked fulltime elsewhere to support your family. Your partner, who is independently wealthy, was compensated nominally for her extra time. For THEM, the profit from the sale would be a nice bonus. For you, it would be a much-needed windfall.",
-        "Bonus Allocation": "Instruction3: You play the role of an HR manager discussing bonus allocations. We have to allocate a bonus of $50000 among three employees. The first employee exceeded the targets and took on additional responsibilities. The second employee showed a great improvement and proactive behaviour. The third employee performed solidly according the role requirements" 
+        "Work-Study Program": "You play the role of an advisor in a work-study program negotiation.  We are negotiating how to distribute funds among fictitious candidates for a work-study program. We have $30,000 to distribute among Alice, Bob, and Carol. Our goal is to allocate these funds in a way that supports their participation in the work-study program effectively. Background Information: Alice is a high academic achiever and has moderate financial need. Bob has average academic performance and high financial need. Carol has good academic performance and low financial need.",
+        "Selling a Company": "You play the role of a business partner in the process of selling a company. You and your partner end up getting an offer that pleases you both, namely $500000, so now you face the enviable task of splitting up the money. Your partner put twice as many hours into the firm's start-up as you did, while you worked fulltime elsewhere to support your family. Your partner, who is independently wealthy, was compensated nominally for her extra time. For them, the profit from the sale would be a nice bonus. For you, it would be a much-needed windfall.",
+        "Bonus Allocation": "You play the role of an HR manager discussing bonus allocations. We have to allocate a bonus of $50000 among three employees. The first employee exceeded the targets and took on additional responsibilities. The second employee showed a great improvement and proactive behaviour. The third employee performed solidly according the role requirements" 
     }
    
     
-    system_message = f"{personality_type[personality], scenario_instructions[scenario], 'Respond concisely in no more than three sentences.'}"
+    system_message = f"""{personality_type[personality]}, {scenario_instructions[scenario]}, 'Respond concisely in no more than three sentences following these rules: 1. Do not apologize. 2. Do not include any "note" or "disclaimer".'"""
+
 
     messages = [{"role": "system", "content": system_message}]
     if chat_log:
@@ -126,86 +128,96 @@ def save_data(data, filename_prefix):
         json.dump(data, file)
     return file_path
 
-def main():
+def Home():
     if 'transformed' not in st.session_state:
         st.session_state.transformed = pd.DataFrame()
-    st.sidebar.title("Navigation")
-    selection = st.sidebar.radio("Go to", ["Home", "Questionnaire", "Negotiation 1", "Negotiation 2"])
+
+
+
     
-    if selection == "Home":
-        st.header('Fair Play: Assessing GPT Models in Simulated Negotiation Environments')
-        st.write("""
-            Dear Participant,
+    #st.sidebar.title("Navigation")
+    #selection = st.sidebar.radio("Go to", ["Home", "Questionnaire", "Negotiation 1", "Negotiation 2"])
 
-            Welcome to our interactive platform! This platform is designed to gather valuable insights into the performance of GPT models in negotiation scenarios. By analyzing your interactions, we aim to understand the fairness and behavior of AI in negotiation contexts, which will help inform future developments and improvements. Your participation is crucial, as it will provide essential data on how these AI models perform in simulated negotiations.
+    #if selection == "Home":
+    st.header('Fair Play: Assessing GPT Models in Simulated Negotiation Environments')
+    st.write("""
+        Dear Participant,
 
-            **How to Participate**
-            1. **Fill out the survey:** Start by completing a brief survey on the second page, which should take about 3 minutes. Your responses are crucial for understanding the context of each negotiation scenario. Please answer all questions as accurately and honestly as possible.
-            2. **Choose a negotiation scenario:** After completing the survey, you'll be able to select from a list of suggested negotiation scenarios. Choose one that interests you or feels relevant. Background information about the chosen scenario, including your role, will be provided.
-            3. **Engage with the chatbot:** Once you've selected a scenario, you can begin negotiating with the chatbot. Please limit the negotiation to no more than 6 rounds to ensure the process is concise and manageable.
+        Welcome to our interactive platform! This platform is designed to gather valuable insights into the performance of GPT models in negotiation scenarios. By analyzing your interactions, we aim to understand the fairness and behavior of AI in negotiation contexts, which will help inform future developments and improvements. Your participation is crucial, as it will provide essential data on how these AI models perform in simulated negotiations.
 
-            Please be assured that all information you provide will be kept confidential and used solely for research purposes. Your responses will be anonymized, and no personally identifiable information will be linked to your answers. Participation in this study is voluntary, and you may withdraw at any time without any consequences.
-
-            This study is conducted by Veronika Tsishetska and Dr. Meltem Aksoy. If you have any questions or need further clarification, feel free to contact us at veronika.tsishetska@tu-dortmund.de and meltem.aksoy@tu-dortmund.de.
-
-            Thank you for your time and valuable contribution.
-
-            Sincerely,
-            
-            Veronika Tsishetska & Dr. Meltem Aksoy
-            
-            Data Science and Data Engineering
-            Technical University Dortmund
-        """)
-    
-    
-    
-        st.header('Consent for Participation and Data Collection Authorization')
-
-        # Introductory Consent Information
-        st.write("""
-        Thank you for considering participation in our research study. In accordance with the General Data Protection Regulation (GDPR) and other relevant laws, we are committed to protecting and respecting your privacy. Please read the following important information concerning the collection and processing of your personal and interaction data.
-        """)
-
-        # Detailed Consent Information in an Expander
-        with st.expander("Read Detailed Consent Information"):
-            st.write("""
-            **Purpose of Data Collection:**
-            The purpose of collecting your data is to conduct a thorough and effective research study aimed at understanding the negotiation dynamics in AI-mediated environments. Your participation will involve various interactive tasks, and the data collected will be crucial for achieving the research objectives.
-
-            **Nature of Data Collected:**
-            We will collect data that may include, but is not limited to, your responses to surveys and questionnaires, details of your interactions with our digital tools, and any other inputs you provide during the study. This information will help us to analyze patterns, draw conclusions, and improve our models and tools.
-
-            **How Your Data Will Be Used:**
-            Your data will be analyzed to gain insights related to the research objectives. The findings may be shared with the academic community through publications, presentations, and reports. No personal data that could directly identify you will be used in any reports or publications.
-
-            **Confidentiality and Security of Your Data:**
-            All personal data collected during this study will be stored securely and accessed only by authorized members of the research team. We will take all necessary precautions to protect your data from unauthorized access, disclosure, alteration, or destruction.
-
-            **Your Rights:**
-            Participation in this study is voluntary, and you have the right to withdraw your consent at any time without consequence. Upon withdrawal, all personal data collected from you will be deleted from our records unless it has been anonymized and cannot be traced back to you. You also have rights to access your personal data, correct any inaccuracies, and request the deletion of your data under certain circumstances.
-            """)
-
-        # Initialize consent state if not already set
-        if 'consent' not in st.session_state:
-            st.session_state.consent = False
-
-        # Consent Checkbox
-        consent = st.checkbox("By checking this box, you confirm that you have read and understood this consent form and agree to participate in this research study. You consent to the collection, processing, and use of your personal and interaction data as outlined above, in accordance with GDPR and other applicable regulations.", value=st.session_state.consent)
+        **How to Participate**
         
+        Please navigate through the app with the navigation bar on the top left.
+        1. **Fill out the survey:** Start by completing a brief survey on the second page, which should take about 3 minutes. Your responses are crucial for understanding the context of each negotiation scenario. Please answer all questions as accurately and honestly as possible.
+        2. **Choose a negotiation scenario:** After completing the survey, you'll be able to select from a list of suggested negotiation scenarios. Choose one that interests you or feels relevant. Background information about the chosen scenario, including your role, will be provided.
+        3. **Engage with the chatbot:** Once you've selected a scenario, you can begin negotiating with the chatbot. Please limit the negotiation to no more than 6 rounds to ensure the process is concise and manageable.
 
-        # Update session state when checkbox is interacted with
-        if consent != st.session_state.consent:
-            st.session_state.consent = consent
+        
+        Please be assured that all information you provide will be kept confidential and used solely for research purposes. Your responses will be anonymized, and no personally identifiable information will be linked to your answers. No personal data will be shared with third parties. Participation in this study is voluntary, and you may withdraw at any time without any consequences. Participants must be at least 18 years old to take part in this study.
 
-        if not st.session_state.consent:
-            st.error("You must agree to the data collection to participate in this study.")
+        This study is conducted by Veronika Tsishetska and Dr. Meltem Aksoy. If you have any questions or need further clarification, feel free to contact us at veronika.tsishetska@tu-dortmund.de and meltem.aksoy@tu-dortmund.de.
 
-   
-    
-    
+        Thank you for your time and valuable contribution.
 
-    elif selection == "Questionnaire":
+        Sincerely,
+        
+        Veronika Tsishetska & Dr. Meltem Aksoy
+        
+        Data Science and Data Engineering /
+        Technical University Dortmund
+    """)
+
+
+
+    st.header('Consent for Participation and Data Collection Authorization')
+
+    # Introductory Consent Information
+    st.write("""
+    Thank you for considering participation in our research study. In accordance with the General Data Protection Regulation (GDPR) and other relevant laws, we are committed to protecting and respecting your privacy. Please read the following important information concerning the collection and processing of your personal and interaction data.
+    """)
+
+    # Detailed Consent Information in an Expander
+    with st.expander("Read Detailed Consent Information"):
+        st.write("""
+        **Purpose of Data Collection:**
+        The purpose of collecting your data is to conduct a thorough and effective research study aimed at understanding the negotiation dynamics in AI-mediated environments. Your participation will involve various negotiation tasks, and the data collected will be crucial for achieving the research objectives.
+
+        **Nature of Data Collected:**
+        We will collect data that may include your responses to surveys and questionnaires, details of your interactions with the chatbots, and any other inputs you provide during the study. This information will help us draw conclusions regarding fairness of the models.
+
+        **How Your Data Will Be Used:**
+        Your data will be analyzed to gain insights related to the research objectives. The findings may be shared with the academic community through publications, presentations, and reports. No personal data that could directly identify you will be used in any reports or publications.
+
+        **Confidentiality and Security of Your Data:**
+        All personal data collected during this study will be stored securely and accessed only by authorized members of the research team. We will take all necessary precautions to protect your data from unauthorized access, disclosure, alteration, or destruction.
+
+        **Your Rights:**
+        Participation in this study is voluntary, and you have the right to withdraw your consent at any time without consequence. Upon withdrawal, all personal data collected from you will be deleted from our records unless it has been anonymized and cannot be traced back to you. You also have rights to access your personal data, correct any inaccuracies, and request the deletion of your data under certain circumstances.
+        """)
+
+    # Initialize consent state if not already set
+    if 'consent' not in st.session_state:
+        st.session_state.consent = False
+
+    # Consent Checkbox
+    consent = st.checkbox("By checking this box, you confirm that you have read and understood this consent form and agree to participate in this research study. You consent to the collection, processing, and use of your personal and interaction data as outlined above, in accordance with GDPR and other applicable regulations.", value=st.session_state.consent)
+
+
+    # Update session state when checkbox is interacted with
+    if consent != st.session_state.consent:
+        st.session_state.consent = consent
+
+    if not st.session_state.consent:
+        st.error("You must agree to the data collection to participate in this study.")
+
+    # col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+    # with col4:
+    #   if st.button("Go to Questionnaire"):
+    #     st.session_state.runpage = Questionnaire
+    #     st.experimental_rerun()
+
+def Questionnaire():
+    #elif selection == "Questionnaire":
         st.header("Questionnaire")
         st.write("Please fill out this brief survey to participate in the study.")
 
@@ -219,7 +231,8 @@ def main():
         is_english = st.radio("Is English your mother tongue?", ["Yes", "No"], key='is_english')
         if is_english == "No":
             mother_tongue = st.text_input("What is your mother tongue?", key='mother_tongue')
-
+        
+        st.write('Note: Please click "autosize all columns" on the top right of the "Statement" column to see the complete statements')
         # Likert Scale Questions
         statements = [
             "I think people who are more hard-working should end up with more money.",
@@ -295,6 +308,7 @@ def main():
         for col_name in ['1 - Strongly Disagree', '2 - Disagree', '3 - Neutral', '4 - Agree', '5 - Strongly Agree']:
             gb.configure_column(col_name, editable=True, cellRenderer=checkbox_renderer)
 
+    
         # Build grid options
         grid_options = gb.build()
 
@@ -305,7 +319,8 @@ def main():
             allow_unsafe_jscode=True,
             update_mode='MODEL_CHANGED'
         )
-
+        # Enable autosize for all columns
+        gb.configure_grid_options(autoSizeAllColumns=True)
         # Update DataFrame if there are changes
         if response:
              df = response['data']
@@ -346,15 +361,21 @@ def main():
         if st.button('Submit', key='submit_resp'):
                 st.success(f'Thank you for sharing your background information!') 
 
-    if 'scenario' not in st.session_state:
-        st.session_state.scenario = "Work-Study Program"  # Default scenario
-    if 'personality' not in st.session_state:
-        st.session_state.personality = "Default"  # Default personality
+        if 'scenario' not in st.session_state:
+            st.session_state.scenario = "Work-Study Program"  # Default scenario
+        if 'personality' not in st.session_state:
+            st.session_state.personality = "Default"  # Default personality
         
+        # col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+        # with col4:
+        #     if st.button("Go to next page"):
+        #         st.session_state.runpage = Negotiation1
+        #         st.experimental_rerun()
+  
+  
 
-
-    
-    elif selection == "Negotiation 1":
+def Negotiation1():
+    #elif selection == "Negotiation 1":
         st.header('Welcome to your first Negotiation Chatbot Session')
         st.write("""
             Please engage in a negotiation with this chatbot, powered by GPT-3.5 Turbo. Select the chatbot's personality and your preferred scenario. Start the negotiation by entering your message below, adhering to the role described in the selected scenario. After completing this session, proceed to the next page for a continuation with a GPT-4 Turbo chatbot.
@@ -405,8 +426,17 @@ def main():
         st.session_state.transformed['Scenario'] = st.session_state.scenario
         st.session_state.transformed['GPT_Personality'] = st.session_state.personality
         st.session_state.transformed['Negotiation1'] = [json.dumps(st.session_state.chat_log_1)]
+        
+        # col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+        # with col4:
+        #     if st.button("Go to next page"):
+        #         st.session_state.runpage = Negotiation2
+        #         st.experimental_rerun()
+    
+        
 
-    elif selection == "Negotiation 2":
+def Negotiation2():
+    #elif selection == "Negotiation 2":
         st.header('Welcome to your second Negotiation Chatbot Session')
         st.write("""
             Continue your negotiation with this chatbot, analogous to the previous session. Use the same scenario you selected earlier, and negotiate according to your role. Don't forget to press submit negotiations after you have completely finished your negotiation with the chatbot!
@@ -452,5 +482,49 @@ def main():
             file_path = save_data_to_excel(st.session_state.transformed, 'survey_responses.xlsx')
             st.success(f'Thank you for your participation!')        
     
+# if __name__ == "__main__":
+#     main()
+# Main Page Logic
+# Main Page Logic
+def main_page():
+    st.sidebar.title("Navigation")
+    selection = st.sidebar.radio("Go to", ["Home", "Questionnaire", "Negotiation 1", "Negotiation 2"])
+
+    if selection == "Home":
+        st.session_state.runpage = "Home"
+    elif selection == "Questionnaire":
+        st.session_state.runpage = "Questionnaire"
+    elif selection == "Negotiation 1":
+        st.session_state.runpage = "Negotiation 1"
+    elif selection == "Negotiation 2":
+        st.session_state.runpage = "Negotiation 2"
+
+def main_page():
+    st.sidebar.title("Navigation")
+    selection = st.sidebar.radio("Go to", ["Home", "Questionnaire", "Negotiation 1", "Negotiation 2"])
+
+    if selection == "Home":
+        st.session_state.runpage = "Home"
+    elif selection == "Questionnaire":
+        st.session_state.runpage = "Questionnaire"
+    elif selection == "Negotiation 1":
+        st.session_state.runpage = "Negotiation 1"
+    elif selection == "Negotiation 2":
+        st.session_state.runpage = "Negotiation 2"
+
+    if 'runpage' not in st.session_state:
+        st.session_state.runpage = "Home"  # Set Home as the default page
+
+    if st.session_state.runpage == "Home":
+        Home()
+    elif st.session_state.runpage == "Questionnaire":
+        Questionnaire()
+    elif st.session_state.runpage == "Negotiation 1":
+        Negotiation1()
+    elif st.session_state.runpage == "Negotiation 2":
+        Negotiation2()
+
 if __name__ == "__main__":
-    main()
+    main_page()
+
+
