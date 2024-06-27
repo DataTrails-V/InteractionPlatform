@@ -440,7 +440,7 @@ def main():
     elif selection == "Negotiation 2":
         st.header('Welcome to your second Negotiation Chatbot Session')
         st.write("""
-            Continue your negotiation with this chatbot, analogous to the previous session. Use the same scenario you selected earlier, and negotiate according to your role. Don't forget to press submit negotiations after you have completely finished your negotiation with the chatbot!
+            Continue your negotiation with this chatbot, analogous to the previous session. Use the same scenario you selected earlier, and negotiate according to your role. Please start with the message **'Let's discuss our perspectives on how we believe the distribution should be managed.'** Don't forget to press submit negotiations after you have completely finished your negotiation with the chatbot!
         """)
 
         # Initialize chat log for Negotiation 2 if not present
