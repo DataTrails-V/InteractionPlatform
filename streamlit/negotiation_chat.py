@@ -100,7 +100,7 @@ def ask(question, chat_log=None, version = "", scenario="", personality = ""):
     }
    
     
-    system_message = f"""{personality_type[personality]}, {scenario_instructions[scenario]}, 'Respond concisely in no more than three sentences following these rules: 1. Do not apologize. 2. Do not include the prompt in your answers. 3. Support your opinions with reasoning rather than simply listing numbers."""
+    system_message = f"""{personality_type[personality]}, {scenario_instructions[scenario]}, 'Respond concisely and briefly in no more than three sentences following these rules: 1. Do not apologize. 2. Do not include the prompt in your answers. 3. Support your opinions with reasoning rather than simply listing numbers."""
 
 
     messages = [{"role": "system", "content": system_message}]
@@ -361,6 +361,14 @@ def Questionnaire():
     #     print("Submitting the following data:", transformed) 
     #     file_path = save_data_to_excel(transformed, 'survey_responses.xlsx')
     #     st.success(f'Thank you for your responses!{file_path}')
+    # Ensure all statements are present in transformed, add missing ones as 'Not_Selected'
+    for statement in statements:
+        column_name = statement.replace(" ", "_")
+        if column_name not in transformed.columns:
+            transformed[column_name] = 'Not_Selected'
+
+    # Optionally, reorder columns to match the order in 'statements'
+    transformed = transformed[[s.replace(" ", "_") for s in statements]]
 
     st.session_state.transformed = transformed
     if st.button('Submit', key='submit_resp'):
