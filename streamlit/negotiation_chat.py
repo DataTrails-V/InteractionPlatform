@@ -369,7 +369,12 @@ def Questionnaire():
 
     # Optionally, reorder columns to match the order in 'statements'
     transformed = transformed[[s.replace(" ", "_") for s in statements]]
+    demographic_cols = ['age', 'gender', 'academic_degree', 'mother_tongue', 'equality', 'proportionality']
+    for col in demographic_cols:
+        transformed[col] = df[col][0]
 
+    transformed.insert(0, 'ParticipantID', uuid.uuid4())
+    
     st.session_state.transformed = transformed
     if st.button('Submit', key='submit_resp'):
             st.success(f'Thank you for sharing your background information!') 
