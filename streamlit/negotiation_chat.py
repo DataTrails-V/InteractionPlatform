@@ -406,13 +406,15 @@ def Negotiation1():
         st.session_state.scenario = "Work-Study Program"
     if 'personality' not in st.session_state:
         st.session_state.personality = "Default"
+    # if 'scenario_saved' not in st.session_state:
+    #     st.session_state.scenario_saved = "Work-Study Program"
     # Setup and user selections for scenario and personality
     selected_scenario = st.selectbox("Choose a scenario to negotiate:", 
                                     ["Work-Study Program", "Selling a Company", "Bonus Allocation"], 
-                                    index=0, key='scenario_select_1')
+                                    index=["Work-Study Program", "Selling a Company", "Bonus Allocation"].index(st.session_state.scenario), key='scenario_select_1')
     selected_personality = st.selectbox("Select negotiation personality of GPT:", 
                                         ["Default", "Proportional", "Equal"], 
-                                        index=0, key='personality_select_1')
+                                        index=["Default", "Proportional", "Equal"].index(st.session_state.personality), key='personality_select_1')
     st.session_state.scenario = selected_scenario
     st.session_state.personality = selected_personality
 
