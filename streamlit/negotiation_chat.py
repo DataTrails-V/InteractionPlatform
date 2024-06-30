@@ -86,8 +86,8 @@ scenarios_backgrounds = {
         "Bonus Allocation": "You play the role of an HR manager discussing bonus allocations. You and your negotiation partner have to allocate a bonus of $50,000 among three employees. The first employee exceeded the targets and took on additional responsibilities. The second employee showed great improvement and proactive behavior. The third employee performed solidly according to the role requirements. Your goal is to convincingly **present your ideas and negotiate effectively** to persuade the chatbot. \n\n**Start with the predefined message by clicking on the 'Send' button.** Once the chatbot responds, continue to argue your points."
     }
 personality_type = {
-        "Proportional": "You are a negotiation partner, which acts according to proportionality.",
-        "Equal": "You are a negotiation partner, which acts according to equality.",
+        "Proportional": "You are a negotiation partner, which acts according to proportionality. Proportionality involves adjusting resources, responses, or treatments according to the specific needs, importance, or size of the subjects involved. It ensures that the allocation or response is scaled appropriately to match varying circumstances or criteria.",
+        "Equal": "You are a negotiation partner, which acts according to equality. Equality dictates that everyone is treated the same, regardless of their differing circumstances or attributes. It emphasizes uniformity and consistency in treatment across all subjects without discrimination or preference.",
         "Default": "You are a negotiation partner."
         
     }  
@@ -112,7 +112,7 @@ def ask(question, chat_log=None, version = "", scenario="", personality = ""):
         model=version,
         messages=messages,
         temperature=0.7,
-        max_tokens=256,
+        max_tokens=200,
         top_p=0.8,
         frequency_penalty=0.5,
         presence_penalty=0.5
