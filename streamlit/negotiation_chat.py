@@ -401,7 +401,11 @@ def Negotiation1():
     # Initialize chat log for Negotiation 1 if not present
     if 'chat_log_1' not in st.session_state:
         st.session_state.chat_log_1 = []
-
+        # Setup and user selections for scenario and personality
+    if 'scenario' not in st.session_state:
+        st.session_state.scenario = "Work-Study Program"
+    if 'personality' not in st.session_state:
+        st.session_state.personality = "Default"
     # Setup and user selections for scenario and personality
     selected_scenario = st.selectbox("Choose a scenario to negotiate:", 
                                     ["Work-Study Program", "Selling a Company", "Bonus Allocation"], 
