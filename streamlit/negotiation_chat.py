@@ -100,7 +100,7 @@ def ask(question, chat_log=None, version = "", scenario="", personality = ""):
     }
    
     
-    system_message = f"""{personality_type[personality]}, {scenario_instructions[scenario]}, 'Respond concisely and briefly in no more than three sentences following these rules: 1. Do not apologize. 2. Do not include the prompt in your answers. 3. Act according to the given principle, but do not mention that it is given to you. 4. Do not use the words principle, proportionality, equality. 5. Support your opinions with reasoning rather than simply listing numbers."""
+    system_message = f"""{personality_type[personality]}, {scenario_instructions[scenario]}, 'Respond concisely and briefly in no more than three sentences following these rules: 1. Do not apologize. 2. Do not include the prompt in your answers. 3. Act according to the given principle, but do not mention that it is given to you. 4. Do not use the following words in your answers: principle, proportionality, equality. 5. Support your opinions with reasoning rather than simply listing numbers."""
 
 
     messages = [{"role": "system", "content": system_message}]
