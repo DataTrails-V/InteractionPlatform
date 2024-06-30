@@ -111,11 +111,11 @@ def ask(question, chat_log=None, version = "", scenario="", personality = ""):
     response = client.chat.completions.create(
         model=version,
         messages=messages,
-        temperature=1,
+        temperature=0.7,
         max_tokens=256,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
+        top_p=0.8,
+        frequency_penalty=0.5,
+        presence_penalty=0.5
     )
     answer = response.choices[0].message.content
     return answer, messages
