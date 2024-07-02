@@ -343,6 +343,13 @@ def Questionnaire():
     df = pd.DataFrame(data)
     transformed = pd.DataFrame(index=[0])
     
+    for statement in statements:
+        column_name = statement.replace(" ", "_")
+        if column_name not in transformed.columns:
+            transformed[column_name] = 'Not_Selected'
+
+    # Optionally, reorder columns to match the order in 'statements'
+    transformed = transformed[[s.replace(" ", "_") for s in statements]]
     # Transposing statements into separate columns with responses
     for i, row in df.iterrows():
         # Check each response column
@@ -362,13 +369,7 @@ def Questionnaire():
     #     file_path = save_data_to_excel(transformed, 'survey_responses.xlsx')
     #     st.success(f'Thank you for your responses!{file_path}')
     # Ensure all statements are present in transformed, add missing ones as 'Not_Selected'
-    for statement in statements:
-        column_name = statement.replace(" ", "_")
-        if column_name not in transformed.columns:
-            transformed[column_name] = 'Not_Selected'
 
-    # Optionally, reorder columns to match the order in 'statements'
-    transformed = transformed[[s.replace(" ", "_") for s in statements]]
     demographic_cols = ['age', 'gender', 'academic_degree', 'mother_tongue', 'equality', 'proportionality']
     for col in demographic_cols:
         transformed[col] = df[col][0]
