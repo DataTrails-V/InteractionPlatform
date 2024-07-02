@@ -349,7 +349,7 @@ def Questionnaire():
     #         transformed[column_name] = 'Not_Selected'
 
     # Optionally, reorder columns to match the order in 'statements'
-    transformed = transformed[[s.replace(" ", "_") for s in statements]]
+    #transformed = transformed[[s.replace(" ", "_") for s in statements]]
     # Transposing statements into separate columns with responses
     for i, row in df.iterrows():
         # Check each response column
