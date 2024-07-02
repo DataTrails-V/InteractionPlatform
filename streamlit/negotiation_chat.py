@@ -358,7 +358,13 @@ def Questionnaire():
                 # If the value is True, set the column name of the new DataFrame to the statement
                 # and the value to the name of the column where the value was True
                 transformed.loc[0, row['Statement']] = col.replace(" ", "_")
-                
+              
+              
+    for statement in statements:
+        column_name = statement
+        if column_name not in transformed.columns:
+            transformed[column_name] = 'Not_Selected'  
+            
     demographic_cols = ['age', 'gender', 'academic_degree', 'mother_tongue', 'equality', 'proportionality']
     for col in demographic_cols:
         transformed[col] = df[col][0]
