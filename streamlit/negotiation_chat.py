@@ -232,7 +232,7 @@ def Questionnaire():
     age = st.selectbox("What is your age range?", age_options, key='age_range')
     gender = st.selectbox("What is your gender?", ["Select an option", "Male", "Female", "Other"], key='gender')
     academic_degree = st.selectbox("What is your highest academic degree?", ["Select an option", "Bachelor", "Master", "PhD", "Other"], key='academic_degree')
-    mother_tongue = 'english'
+    mother_tongue = 'Select an option'
     is_english = st.selectbox("Is English your mother tongue?", ["Select an option", "Yes", "No"], key='is_english')
     if is_english == "No":
         mother_tongue = st.text_input("What is your mother tongue?", key='mother_tongue')
