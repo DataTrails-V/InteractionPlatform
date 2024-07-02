@@ -343,10 +343,10 @@ def Questionnaire():
     df = pd.DataFrame(data)
     transformed = pd.DataFrame(index=[0])
     
-    for statement in statements:
-        column_name = statement.replace(" ", "_")
-        if column_name not in transformed.columns:
-            transformed[column_name] = 'Not_Selected'
+    # for statement in statements:
+    #     column_name = statement.replace(" ", "_")
+    #     if column_name not in transformed.columns:
+    #         transformed[column_name] = 'Not_Selected'
 
     # Optionally, reorder columns to match the order in 'statements'
     transformed = transformed[[s.replace(" ", "_") for s in statements]]
