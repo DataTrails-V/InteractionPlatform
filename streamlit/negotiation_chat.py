@@ -382,9 +382,9 @@ def Questionnaire():
 
     # transformed.insert(0, 'ParticipantID', uuid.uuid4())
     
-    # st.session_state.transformed = transformed
-    # if st.button('Submit', key='submit_resp'):
-    #         st.success(f'Thank you for sharing your background information!') 
+    st.session_state.transformed = transformed
+    if st.button('Submit', key='submit_resp'):
+            st.success(f'Thank you for sharing your background information!') 
 
     if 'scenario' not in st.session_state:
         st.session_state.scenario = "Work-Study Program"  # Default scenario
