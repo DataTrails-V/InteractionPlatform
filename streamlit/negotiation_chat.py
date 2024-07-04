@@ -237,7 +237,7 @@ def Questionnaire():
     if is_english == "No":
         mother_tongue = st.text_input("What is your mother tongue?", key='mother_tongue')
     
-    st.write('Note: Please click "autosize all columns" on the top right of the "Statement" column to see the complete statements')
+    st.write('Note: Please click "Autosize All Columns" on the top right of the "Statement" column to see the complete statements. If you are using your cellphone, press and hold the top right corner of the screen in the "Statement" column for two seconds. This will bring up the option to "Autosize All Columns".')
     # Likert Scale Questions
     statements = [
         "I think people who are more hard-working should end up with more money.",
